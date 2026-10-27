@@ -1,0 +1,55 @@
+# ========================================================
+# Banglar Server - Domain Availability Watcher
+# Production Apache & cPanel Configuration
+# ========================================================
+
+# 1. Disable Directory Listing
+Options -Indexes
+Options +FollowSymLinks
+
+# 2. Set Default Character Set
+AddDefaultCharset UTF-8
+
+# 3. Block Direct Web Access to Sensitive Files & Extensions
+<FilesMatch "(^#.*#|\.(sql|bak|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|env|md|git.*))$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Specifically protect database.sql and config files
+<Files "database.sql">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# 4. Security Headers
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Clickjacking protection
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Cross-site scripting (XSS) filter
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Referrer policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# 5. Prevent execution of arbitrary scripts in uploads/assets if applicable
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+</IfModule>
